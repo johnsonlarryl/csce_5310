@@ -8,7 +8,7 @@ class FoodNutritionFeatures(Enum):
     CARBOHYDRATES = "carbohydrates"
     FIBER = "fiber"
     PROTEIN = "protein"
-    NAME = "menu_item"
+    MENU_ITEM = "menu_item"
 
 
 class Sex(Enum):

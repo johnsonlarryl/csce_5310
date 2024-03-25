@@ -57,7 +57,7 @@ class StarbucksMenuETL(FastFoodMenuETL):
 
         starbucks_drinks = starbucks_drinks[~(starbucks_drinks[self.FOOD_AND_DRINK_RENAME_COLUMNS[1:6]] == "-").all(axis=1)]
 
-        starbucks_drinks.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.NAME.value,
+        starbucks_drinks.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
                                          self.FOOD_AND_DRINK_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
                                          self.FOOD_AND_DRINK_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
                                          self.FOOD_AND_DRINK_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
@@ -76,7 +76,7 @@ class StarbucksMenuETL(FastFoodMenuETL):
     def transform_starbucks_food(self) -> DataFrame:
         starbucks_food = self.extract_starbucks_food()
 
-        starbucks_food.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.NAME.value,
+        starbucks_food.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
                                        self.FOOD_AND_DRINK_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
                                        self.FOOD_AND_DRINK_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
                                        self.FOOD_AND_DRINK_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
@@ -93,7 +93,7 @@ class StarbucksMenuETL(FastFoodMenuETL):
     def transform_starbucks_expanded_drinks(self) -> DataFrame:
         starbucks_drinks_expanded = self.extract_starbucks_expanded_drinks()
 
-        starbucks_drinks_expanded.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.NAME.value,
+        starbucks_drinks_expanded.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
                                                   self.FOOD_AND_DRINK_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
                                                   self.FOOD_AND_DRINK_RENAME_COLUMNS[7]: FoodNutritionFeatures.FAT.value,
                                                   self.FOOD_AND_DRINK_RENAME_COLUMNS[8]: FoodNutritionFeatures.CARBOHYDRATES.value,
@@ -145,19 +145,70 @@ class McDonaldsMenuETL(FastFoodMenuETL):
 
         mcdonalds_menu.drop(columns=self.MENU_DROP_COLUMNS, inplace=True)
 
-        mcdonalds_menu.rename(
-            columns={self.MENU_RENAME_COLUMNS[0]: FoodNutritionFeatures.NAME.value,
-                     self.MENU_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
-                     self.MENU_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
-                     self.MENU_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
-                     self.MENU_RENAME_COLUMNS[4]: FoodNutritionFeatures.PROTEIN.value,
-                     self.MENU_RENAME_COLUMNS[5]: FoodNutritionFeatures.FIBER.value},
-            inplace=True)
+        mcdonalds_menu.rename(columns={self.MENU_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
+                                       self.MENU_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
+                                       self.MENU_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
+                                       self.MENU_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
+                                       self.MENU_RENAME_COLUMNS[4]: FoodNutritionFeatures.PROTEIN.value,
+                                       self.MENU_RENAME_COLUMNS[5]: FoodNutritionFeatures.FIBER.value},
+                              inplace=True)
 
         return mcdonalds_menu
 
     def load_menu_items(self) -> DataFrame:
         return self.transform_mcdonalds_menu()
+
+
+class BurgerKingMenuETL(FastFoodMenuETL):
+    def __init__(self):
+        self.BASE_DIR = "burger-king"
+        self.MENU_FILE_NAME = f"{self.BASE_DIR}/burger-king.csv"
+        self.MENU_DROP_COLUMNS = ["Category",
+                                  "Fat Calories",
+                                  "Saturated Fat (g)",
+                                  "Trans Fat (g)",
+                                  "Cholesterol (mg)",
+                                  "Sodium (mg)",
+                                  "Sugars (g)",
+                                  "Weight Watchers"]
+
+        self.MENU_RENAME_COLUMNS = ["Item",
+                                    "Calories",
+                                    "Fat (g)",
+                                    "Total Carb (g)",
+                                    "Protein (g)",
+                                    "Dietary Fiber (g)"]
+
+    def extract_burger_king_menu(self) -> DataFrame:
+        return pd.read_csv(get_full_qualified_file_name(self.MENU_FILE_NAME),
+                           index_col=False)
+
+    def transform_burger_king_menu(self) -> DataFrame:
+        burger_king_menu = self.extract_burger_king_menu()
+
+        burger_king_menu.drop(columns=self.MENU_DROP_COLUMNS, inplace=True)
+
+        burger_king_menu.rename(columns={self.MENU_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
+                                         self.MENU_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
+                                         self.MENU_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
+                                         self.MENU_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
+                                         self.MENU_RENAME_COLUMNS[4]: FoodNutritionFeatures.PROTEIN.value,
+                                         self.MENU_RENAME_COLUMNS[5]: FoodNutritionFeatures.FIBER.value},
+                                inplace=True)
+
+        return burger_king_menu
+
+    def load_menu_items(self) -> DataFrame:
+        return self.transform_burger_king_menu()
+
+
+class WendysdMenuETL(ABC):
+    def load_menu_items(self) -> DataFrame: pass
+
+
+class ChickFilaMenuETL(ABC):
+    def load_menu_items(self) -> DataFrame: pass
+
 
 
 
