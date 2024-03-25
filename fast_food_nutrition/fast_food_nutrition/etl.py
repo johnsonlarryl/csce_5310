@@ -7,12 +7,28 @@ from fast_food_nutrition.model import FoodNutritionFeatures
 from fast_food_nutrition.util import get_full_qualified_file_name
 
 
-class FastFoodMenuETL(ABC):
+class FastFoodMenuETLInterface(ABC):
     @abstractmethod
     def load_menu_items(self) -> DataFrame: pass
 
 
-class StarbucksMenuETL(FastFoodMenuETL):
+class FastFoodMenuETL(FastFoodMenuETLInterface):
+    def __init__(self):
+        self.star_bucks_menu_etl = StarbucksMenuETL()
+        self.mcdonalds_menu_etl = McDonaldsMenuETL()
+        self.burger_king_etl = BurgerKingMenuETL()
+        self.wendys_menu_etl = WendysdMenuETL()
+        self.chick_fila_menu_etl = ChickFilaMenuETL()
+
+    def load_menu_items(self) -> DataFrame:
+        return pd.concat([self.star_bucks_menu_etl.load_menu_items(),
+                          self.mcdonalds_menu_etl.load_menu_items(),
+                          self.burger_king_etl.load_menu_items(),
+                          self.wendys_menu_etl.load_menu_items(),
+                          self.chick_fila_menu_etl.load_menu_items()], ignore_index=True)
+
+
+class StarbucksMenuETL(FastFoodMenuETLInterface):
     def __init__(self):
         self.BASE_DIR = "starbucks"
         self.DRINKS_FILE_NAME = f"{self.BASE_DIR}/starbucks-menu-nutrition-drinks.csv"
@@ -106,7 +122,7 @@ class StarbucksMenuETL(FastFoodMenuETL):
         return starbucks_drinks_expanded
 
 
-class McDonaldsMenuETL(FastFoodMenuETL):
+class McDonaldsMenuETL(FastFoodMenuETLInterface):
     def __init__(self):
         self.BASE_DIR = "mcdonalds"
         self.MENU_FILE_NAME = f"{self.BASE_DIR}/mcdonalds.csv"
@@ -159,7 +175,7 @@ class McDonaldsMenuETL(FastFoodMenuETL):
         return self.transform_mcdonalds_menu()
 
 
-class BurgerKingMenuETL(FastFoodMenuETL):
+class BurgerKingMenuETL(FastFoodMenuETLInterface):
     def __init__(self):
         self.BASE_DIR = "burger-king"
         self.MENU_FILE_NAME = f"{self.BASE_DIR}/burger-king.csv"
@@ -245,7 +261,44 @@ class WendysdMenuETL(ABC):
 
 
 class ChickFilaMenuETL(ABC):
-    def load_menu_items(self) -> DataFrame: pass
+    def __init__(self):
+        self.BASE_DIR = "chick-fila"
+        self.MENU_FILE_NAME = f"{self.BASE_DIR}/chick-fila.csv"
+        self.MENU_DROP_COLUMNS = ["Serving size",
+                                  "Sat. Fat (G)",
+                                  "Trans Fat (G)",
+                                  "Cholesterol (MG)",
+                                  "Sodium (MG)",
+                                  "Sugar (G)"]
+
+        self.MENU_RENAME_COLUMNS = ["Menu",
+                                    "Calories",
+                                    "Fat (G)",
+                                    "Carbohydrates (G)",
+                                    "Protein (G)",
+                                    "Fiber (G)"]
+
+    def extract_chick_fila_menu(self) -> DataFrame:
+        return pd.read_csv(get_full_qualified_file_name(self.MENU_FILE_NAME),
+                           index_col=False)
+
+    def transform_chick_fila_menu(self) -> DataFrame:
+        chick_fila = self.extract_chick_fila_menu()
+
+        chick_fila.drop(columns=self.MENU_DROP_COLUMNS, inplace=True)
+
+        chick_fila.rename(columns={self.MENU_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
+                                   self.MENU_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
+                                   self.MENU_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
+                                   self.MENU_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
+                                   self.MENU_RENAME_COLUMNS[4]: FoodNutritionFeatures.PROTEIN.value,
+                                   self.MENU_RENAME_COLUMNS[5]: FoodNutritionFeatures.FIBER.value},
+                          inplace=True)
+
+        return chick_fila
+    
+    def load_menu_items(self) -> DataFrame:
+        return self.transform_chick_fila_menu()
 
 
 

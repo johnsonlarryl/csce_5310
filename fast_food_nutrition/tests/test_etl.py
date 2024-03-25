@@ -2,6 +2,7 @@ from pandas import DataFrame
 
 from fast_food_nutrition.etl import (BurgerKingMenuETL,
                                      ChickFilaMenuETL,
+                                     FastFoodMenuETL,
                                      McDonaldsMenuETL,
                                      StarbucksMenuETL,
                                      WendysdMenuETL)
@@ -16,7 +17,8 @@ FAST_FOOD_MENU_ITEM_COUNTS = {"starbucks_drinks": 92,
                               "mcdonalds_menu": 260,
                               "burger_king_menu": 77,
                               "wendys_menu": 43,
-                              "chick_fila_menu": 290}
+                              "chick_fila_menu": 290,
+                              "menu": 1117}
 
 
 def test_transform_starbucks_drinks():
@@ -63,8 +65,14 @@ def test_load_burger_wendys_menu_items():
 
 def test_load_chick_fila_menu_items():
     etl = ChickFilaMenuETL()
-    burger_king_menu = etl.load_menu_items()
-    assert_menu_items(burger_king_menu, "chick_fila_menu")
+    chick_fila_menu = etl.load_menu_items()
+    assert_menu_items(chick_fila_menu, "chick_fila_menu")
+
+
+def test_load_all_menu_items():
+    etl = FastFoodMenuETL()
+    menu = etl.load_menu_items()
+    assert_menu_items(menu, "menu")
 
 
 def assert_menu_items(food_menu_items: DataFrame, menu_item: str) -> None:
