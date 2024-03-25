@@ -2,13 +2,21 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from pandas import DataFrame
 
-from fast_food_nutrition.model import FoodNutritionFeatures
+from fast_food_nutrition.model import COLOR, DATA_TYPE, FLOAT, FoodNutritionFeatures, FoodNutritionMapping, STRING
 from fast_food_nutrition.util import get_full_qualified_file_name
 
 
 class FastFoodMenuETLInterface(ABC):
     @abstractmethod
     def load_menu_items(self) -> DataFrame: pass
+
+    def convert_data_types(self, menu: DataFrame) -> DataFrame:
+        return menu.astype({FoodNutritionFeatures.MENU_ITEM.value: FoodNutritionMapping[FoodNutritionFeatures.MENU_ITEM.value][DATA_TYPE],
+                            FoodNutritionFeatures.CALORIES.value: FoodNutritionMapping[FoodNutritionFeatures.CALORIES.value][DATA_TYPE],
+                            FoodNutritionFeatures.FAT.value: FoodNutritionMapping[FoodNutritionFeatures.CALORIES.value][DATA_TYPE],
+                            FoodNutritionFeatures.CARBOHYDRATES.value: FoodNutritionMapping[FoodNutritionFeatures.CALORIES.value][DATA_TYPE],
+                            FoodNutritionFeatures.PROTEIN.value: FoodNutritionMapping[FoodNutritionFeatures.CALORIES.value][DATA_TYPE],
+                            FoodNutritionFeatures.FIBER.value: FoodNutritionMapping[FoodNutritionFeatures.CALORIES.value][DATA_TYPE]})
 
 
 class FastFoodMenuETL(FastFoodMenuETLInterface):
@@ -20,11 +28,11 @@ class FastFoodMenuETL(FastFoodMenuETLInterface):
         self.chick_fila_menu_etl = ChickFilaMenuETL()
 
     def load_menu_items(self) -> DataFrame:
-        return pd.concat([self.star_bucks_menu_etl.load_menu_items(),
-                          self.mcdonalds_menu_etl.load_menu_items(),
-                          self.burger_king_etl.load_menu_items(),
-                          self.wendys_menu_etl.load_menu_items(),
-                          self.chick_fila_menu_etl.load_menu_items()], ignore_index=True)
+        return self.convert_data_types(pd.concat([self.star_bucks_menu_etl.load_menu_items(),
+                                                  self.mcdonalds_menu_etl.load_menu_items(),
+                                                  self.burger_king_etl.load_menu_items(),
+                                                  self.wendys_menu_etl.load_menu_items(),
+                                                  self.chick_fila_menu_etl.load_menu_items()], ignore_index=True))
 
 
 class StarbucksMenuETL(FastFoodMenuETLInterface):
@@ -43,26 +51,27 @@ class StarbucksMenuETL(FastFoodMenuETLInterface):
                                               "Total Fat (g)",
                                               "Total Carbohydrates (g)",
                                               "Dietary Fibre (g)",
-                                              "Protein (g)"]
+                                              "Protein (g)",
+                                              ]
         self.DRINK_DROP_COLUMNS = ["Sodium"]
-        self.DRINK_EXPANDED_DROP_COLUMNS = ['Beverage_category',
-                                            'Beverage',
-                                            'Beverage_prep',
-                                            'Trans Fat (g)',
-                                            'Saturated Fat (g)',
-                                            'Sodium (mg)',
-                                            'Cholesterol (mg)',
-                                            'Sugars (g)',
-                                            'Vitamin A (% DV)',
-                                            'Vitamin C (% DV)',
-                                            'Calcium (% DV)',
-                                            'Iron (% DV)',
-                                            'Caffeine (mg)']
+        self.DRINK_EXPANDED_DROP_COLUMNS = ["Beverage_category",
+                                            "Beverage",
+                                            "Beverage_prep",
+                                            "Trans Fat (g)",
+                                            "Saturated Fat (g)",
+                                            "Sodium (mg)",
+                                            "Cholesterol (mg)",
+                                            "Sugars (g)",
+                                            "Vitamin A (% DV)",
+                                            "Vitamin C (% DV)",
+                                            "Calcium (% DV)",
+                                            "Iron (% DV)",
+                                            "Caffeine (mg)"]
 
     def load_menu_items(self) -> DataFrame:
-        return pd.concat([self.transform_starbucks_drinks(),
-                               self.transform_starbucks_food(),
-                               self.transform_starbucks_expanded_drinks()], ignore_index=True)
+        return self.convert_data_types(pd.concat([self.transform_starbucks_drinks(),
+                                                      self.transform_starbucks_food(),
+                                                      self.transform_starbucks_expanded_drinks()], ignore_index=True))
 
     def extract_starbucks_drinks(self) -> DataFrame:
         return pd.read_csv(get_full_qualified_file_name(self.DRINKS_FILE_NAME), index_col=False)
@@ -85,7 +94,7 @@ class StarbucksMenuETL(FastFoodMenuETLInterface):
 
     def extract_starbucks_food(self) -> DataFrame:
         return pd.read_csv(get_full_qualified_file_name(self.FOOD_FILE_NAME),
-                           encoding='utf-16',
+                           encoding="utf-16",
                            index_col=False)
 
     def transform_starbucks_food(self) -> DataFrame:
@@ -108,8 +117,12 @@ class StarbucksMenuETL(FastFoodMenuETLInterface):
     def transform_starbucks_expanded_drinks(self) -> DataFrame:
         starbucks_drinks_expanded = self.extract_starbucks_expanded_drinks()
 
-        starbucks_drinks_expanded.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
-                                                  self.FOOD_AND_DRINK_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
+        starbucks_drinks_expanded[FoodNutritionFeatures.MENU_ITEM.value] = \
+            starbucks_drinks_expanded[self.DRINK_EXPANDED_DROP_COLUMNS[1]] + \
+            " " + \
+            starbucks_drinks_expanded[self.DRINK_EXPANDED_DROP_COLUMNS[2]]
+
+        starbucks_drinks_expanded.rename(columns={self.FOOD_AND_DRINK_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
                                                   self.FOOD_AND_DRINK_RENAME_COLUMNS[7]: FoodNutritionFeatures.FAT.value,
                                                   self.FOOD_AND_DRINK_RENAME_COLUMNS[8]: FoodNutritionFeatures.CARBOHYDRATES.value,
                                                   self.FOOD_AND_DRINK_RENAME_COLUMNS[9]: FoodNutritionFeatures.FIBER.value,
@@ -171,7 +184,7 @@ class McDonaldsMenuETL(FastFoodMenuETLInterface):
         return mcdonalds_menu
 
     def load_menu_items(self) -> DataFrame:
-        return self.transform_mcdonalds_menu()
+        return self.convert_data_types(self.transform_mcdonalds_menu())
 
 
 class BurgerKingMenuETL(FastFoodMenuETLInterface):
@@ -214,10 +227,10 @@ class BurgerKingMenuETL(FastFoodMenuETLInterface):
         return burger_king_menu
 
     def load_menu_items(self) -> DataFrame:
-        return self.transform_burger_king_menu()
+        return self.convert_data_types(self.transform_burger_king_menu())
 
 
-class WendysdMenuETL(ABC):
+class WendysdMenuETL(FastFoodMenuETLInterface):
     def __init__(self):
         self.BASE_DIR = "wendys"
         self.MENU_FILE_NAME = f"{self.BASE_DIR}/wendys.csv"
@@ -256,10 +269,10 @@ class WendysdMenuETL(ABC):
         return wendys_menu
 
     def load_menu_items(self) -> DataFrame:
-        return self.transform_wendys_menu()
+        return self.convert_data_types(self.transform_wendys_menu())
 
 
-class ChickFilaMenuETL(ABC):
+class ChickFilaMenuETL(FastFoodMenuETLInterface):
     def __init__(self):
         self.BASE_DIR = "chick-fila"
         self.MENU_FILE_NAME = f"{self.BASE_DIR}/chick-fila.csv"
@@ -297,7 +310,7 @@ class ChickFilaMenuETL(ABC):
         return chick_fila
     
     def load_menu_items(self) -> DataFrame:
-        return self.transform_chick_fila_menu()
+        return self.convert_data_types(self.transform_chick_fila_menu())
 
 
 

@@ -11,6 +11,27 @@ class FoodNutritionFeatures(Enum):
     MENU_ITEM = "menu_item"
 
 
+DATA_TYPE = "data_type"
+STRING = "string"
+FLOAT = "float64"
+COLOR = "color"
+
+
+FoodNutritionMapping = {
+                            FoodNutritionFeatures.MENU_ITEM.value: {DATA_TYPE: STRING},
+                            FoodNutritionFeatures.CALORIES.value: {DATA_TYPE: FLOAT,
+                                                                   COLOR: "#add8e6"},
+                            FoodNutritionFeatures.FAT.value: {DATA_TYPE: FLOAT,
+                                                              COLOR: "#90ee90"},
+                            FoodNutritionFeatures.CARBOHYDRATES.value: {DATA_TYPE: FLOAT,
+                                                                        COLOR: "#ffb6c1"},
+                            FoodNutritionFeatures.PROTEIN.value: {DATA_TYPE: FLOAT,
+                                                                  COLOR: "#dda0dd"},
+                            FoodNutritionFeatures.FIBER.value: {DATA_TYPE: FLOAT,
+                                                                COLOR: "#dda0dd"}
+                       }
+
+
 class Sex(Enum):
     MALE = "M"
     FEMALE = "F"
