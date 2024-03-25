@@ -203,7 +203,45 @@ class BurgerKingMenuETL(FastFoodMenuETL):
 
 
 class WendysdMenuETL(ABC):
-    def load_menu_items(self) -> DataFrame: pass
+    def __init__(self):
+        self.BASE_DIR = "wendys"
+        self.MENU_FILE_NAME = f"{self.BASE_DIR}/wendys.csv"
+        self.MENU_DROP_COLUMNS = ["Category",
+                                  "Sat Fat (g)",
+                                  "Trans Fat (g)",
+                                  "Cholesterol (mg)",
+                                  "Sodium (mg)",
+                                  "Sugars (g)",
+                                  "Weight Watchers"]
+
+        self.MENU_RENAME_COLUMNS = ["Item",
+                                    "Calories",
+                                    "Fat (g)",
+                                    "Total Carb (g)",
+                                    "Protein (g)",
+                                    "Dietary Fiber (g)"]
+
+    def extract_wendys_menu(self) -> DataFrame:
+        return pd.read_csv(get_full_qualified_file_name(self.MENU_FILE_NAME),
+                           index_col=False)
+
+    def transform_wendys_menu(self) -> DataFrame:
+        wendys_menu = self.extract_wendys_menu()
+
+        wendys_menu.drop(columns=self.MENU_DROP_COLUMNS, inplace=True)
+
+        wendys_menu.rename(columns={self.MENU_RENAME_COLUMNS[0]: FoodNutritionFeatures.MENU_ITEM.value,
+                                    self.MENU_RENAME_COLUMNS[1]: FoodNutritionFeatures.CALORIES.value,
+                                    self.MENU_RENAME_COLUMNS[2]: FoodNutritionFeatures.FAT.value,
+                                    self.MENU_RENAME_COLUMNS[3]: FoodNutritionFeatures.CARBOHYDRATES.value,
+                                    self.MENU_RENAME_COLUMNS[4]: FoodNutritionFeatures.PROTEIN.value,
+                                    self.MENU_RENAME_COLUMNS[5]: FoodNutritionFeatures.FIBER.value},
+                           inplace=True)
+
+        return wendys_menu
+
+    def load_menu_items(self) -> DataFrame:
+        return self.transform_wendys_menu()
 
 
 class ChickFilaMenuETL(ABC):

@@ -56,13 +56,13 @@ def test_load_burger_king_menu_items():
 
 
 def test_load_burger_wendys_menu_items():
-    etl = BurgerKingMenuETL()
-    burger_king_menu = etl.load_menu_items()
-    assert_menu_items(burger_king_menu, "wendys_menu")
+    etl = WendysdMenuETL()
+    wendys_menu = etl.load_menu_items()
+    assert_menu_items(wendys_menu, "wendys_menu")
 
 
 def test_load_chick_fila_menu_items():
-    etl = BurgerKingMenuETL()
+    etl = ChickFilaMenuETL()
     burger_king_menu = etl.load_menu_items()
     assert_menu_items(burger_king_menu, "chick_fila_menu")
 
