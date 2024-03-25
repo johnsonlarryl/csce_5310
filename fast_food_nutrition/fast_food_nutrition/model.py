@@ -16,19 +16,21 @@ STRING = "string"
 FLOAT = "float64"
 COLOR = "color"
 
+COLORS = ["#add8e6", "#90ee90", "#ffb6c1", "#dda0dd", "#ffd580"]
+
 
 FoodNutritionMapping = {
                             FoodNutritionFeatures.MENU_ITEM.value: {DATA_TYPE: STRING},
                             FoodNutritionFeatures.CALORIES.value: {DATA_TYPE: FLOAT,
-                                                                   COLOR: "#add8e6"},
+                                                                   COLOR: COLORS[0]},
                             FoodNutritionFeatures.FAT.value: {DATA_TYPE: FLOAT,
-                                                              COLOR: "#90ee90"},
+                                                              COLOR: COLORS[1]},
                             FoodNutritionFeatures.CARBOHYDRATES.value: {DATA_TYPE: FLOAT,
-                                                                        COLOR: "#ffb6c1"},
+                                                                        COLOR: COLORS[2]},
                             FoodNutritionFeatures.PROTEIN.value: {DATA_TYPE: FLOAT,
-                                                                  COLOR: "#dda0dd"},
+                                                                  COLOR: COLORS[3]},
                             FoodNutritionFeatures.FIBER.value: {DATA_TYPE: FLOAT,
-                                                                COLOR: "#dda0dd"}
+                                                                COLOR: COLORS[4]}
                        }
 
 

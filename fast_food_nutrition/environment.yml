@@ -12,4 +12,5 @@ dependencies:
   - python=3.9.5
   - pytest
   - scikit-learn
+  - scipy
   - seaborn
