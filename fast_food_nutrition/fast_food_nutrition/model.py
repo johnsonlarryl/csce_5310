@@ -2,6 +2,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 
+class Test(Enum):
+    RIGHT_TAILED = "RT"
+    LEFT_TAILED = "LT"
+    TWO_TAILED = "TT"
+
+
 class FoodNutritionFeatures(Enum):
     CALORIES = "calories"
     FAT = "fat"

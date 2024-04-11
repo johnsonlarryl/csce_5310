@@ -25,6 +25,13 @@ According to the National Health System (NHS) men should not eat more than 30g o
 
 <!-- Design -->
 ## High-level Design
+Here's a rough breakdown of how these factors might contribute to a fast food menu item, totaling up to 100%.
+
+* High in Calories: 35%
+* High in Fat: 30%
+* High in Carbohydrates: 20%
+* Low in Fiber: 10%
+* Low in Protein: 5%
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -101,8 +108,7 @@ on examples of how to use the notebook.
 
 <!-- ACKNOWLEDGEMENT -->
 ## Acknowledgements
-* Richard S. Sutton, Andrew G. Barto. Reinforcement Learning, second edition: An Introduction (Adaptive Computation and Machine Learning series), 2nd edition. Bradford Books, 2018.
-* Peter Norvig, Stuart Russell. Artificial Intelligence: A Modern Approach, Global Edition, 4th edition. Pearson, 2021.
+* Mario Triola Elementary Statistics 13th Edition
 
 <!-- CONTACT -->
 
@@ -131,6 +137,3 @@ Project Link: [https://https://github.com/johnsonlarryl/csce_5210](https://githu
 [Miniconda.com]:https://img.shields.io/badge/conda-342B029.svg?&style=for-the-badge&logo=anaconda&logoColor=white
 
 <!-- REFERENCES -->
-[^1]: [Combinatorial Optimization](https://en.wikipedia.org/wiki/Combinatorial_optimization)
-<br>
-[^2]: [Simulated Annealing](https://en.wikipedia.org/wiki/Simulated_annealing)

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from pandas import DataFrame
 
-from fast_food_nutrition.model import COLOR, DATA_TYPE, FLOAT, FoodNutritionFeatures, FoodNutritionMapping, STRING
+from fast_food_nutrition.model import DATA_TYPE, FoodNutritionFeatures, FoodNutritionMapping
 from fast_food_nutrition.util import get_full_qualified_file_name
 
 
