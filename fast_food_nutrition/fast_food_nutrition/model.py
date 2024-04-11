@@ -8,6 +8,17 @@ class Test(Enum):
     TWO_TAILED = "TT"
 
 
+class HypothesisTestMethod:
+    P_VALUE_METHOD = "p_value"
+    CRITICAL_VALUE_METHOD = "critical_value"
+    CONFIDENCE_INTERVAL_METHOD = "confidence_interval"
+
+
+class HypothesisTestConclusion:
+    REJECT_H_0 = "reject_h_0"
+    FAIL_TO_REJECT_H0 = "do_not_reject_h_0"
+
+
 class FoodNutritionFeatures(Enum):
     CALORIES = "calories"
     FAT = "fat"

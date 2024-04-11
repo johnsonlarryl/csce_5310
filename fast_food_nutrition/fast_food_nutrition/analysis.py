@@ -5,7 +5,7 @@ from pandas import DataFrame, Series
 from scipy.stats import chi2, norm, t
 from typing import List, Tuple
 
-from fast_food_nutrition.model import Test
+from fast_food_nutrition.model import HypothesisTestConclusion, HypothesisTestMethod, Test
 
 
 class Outliers:
@@ -59,6 +59,36 @@ class ZTest:
             p_value = 1 - norm.cdf(z)
 
         return round(z, 2), round(p_value, 3)
+
+    @staticmethod
+    def calculate_proportion_hypothesis_critical_value_test_method(z: float, alpha: float, test: Test) -> HypothesisTestConclusion:
+        if test == Test.TWO_TAILED:
+            z_alpha_2 = 1 - (alpha / 2)
+            critical_value_lower = norm.ppf(z_alpha_2)
+            critical_value_upper = norm.ppf(1 - z_alpha_2)
+
+            if z <= critical_value_lower or z >= critical_value_upper:
+                return HypothesisTestConclusion.REJECT_H_0
+            else:
+                return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+        elif test == Test.LEFT_TAILED:
+            critical_value = norm.ppf(alpha)
+
+            if z <= critical_value:
+                return HypothesisTestConclusion.REJECT_H_0
+            else:
+                return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+        elif test == Test.RIGHT_TAILED:
+            critical_value = norm.ppf(1 - alpha)
+
+            if z >= critical_value:
+                return HypothesisTestConclusion.REJECT_H_0
+            else:
+                return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+
+    @staticmethod
+    def calculate_proportion_hypothesis_p_value_test_method(p_value: float, alpha: float) -> HypothesisTestConclusion: pass
+
 
 
 class TTest:
