@@ -48,7 +48,7 @@ def test_calculate_proportion_hypothesis_critical_test_method_two_tailed_test_re
     z = -0.56
     alpha = 0.05
 
-    expect_hypothesis_test_conclusion = HypothesisTestConclusion.REJECT_H_0
+    expect_hypothesis_test_conclusion = HypothesisTestConclusion.FAIL_TO_REJECT_H0
     actual_hypothesis_test_conclusion = ZTest.calculate_proportion_hypothesis_critical_value_test_method(z=z,
                                                                                                          alpha=alpha,
                                                                                                          test=Test.TWO_TAILED)
@@ -70,7 +70,7 @@ def test_calculate_proportion_hypothesis_critical_test_method_left_tailed_fail_t
 
 def test_calculate_proportion_hypothesis_critical_test_method_right_tailed_fail_to_reject_h0():
     z = -0.56
-    alpha = 0.712
+    alpha = 0.05
 
     expect_hypothesis_test_conclusion = HypothesisTestConclusion.FAIL_TO_REJECT_H0
     actual_hypothesis_test_conclusion = ZTest.calculate_proportion_hypothesis_critical_value_test_method(z=z,
@@ -78,6 +78,19 @@ def test_calculate_proportion_hypothesis_critical_test_method_right_tailed_fail_
                                                                                                          test=Test.RIGHT_TAILED)
 
     assert actual_hypothesis_test_conclusion == expect_hypothesis_test_conclusion
+
+
+def test_calculate_proportion_hypothesis_p_value_test_method_reject_h0():
+    p_value = 0.288
+    alpha = 0.05
+
+    expect_hypothesis_test_conclusion = HypothesisTestConclusion.FAIL_TO_REJECT_H0
+    actual_hypothesis_test_conclusion = ZTest.calculate_proportion_hypothesis_p_value_test_method(p_value=p_value,
+                                                                                                  alpha=alpha)
+
+    assert actual_hypothesis_test_conclusion == expect_hypothesis_test_conclusion
+
+
 
 
 
