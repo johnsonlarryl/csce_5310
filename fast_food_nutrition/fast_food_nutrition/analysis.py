@@ -182,24 +182,27 @@ class TTest:
                             n_1: int,
                             n_2: int,
                             test: Test) -> Tuple[float, float]:
-
-        def A(sigma_1: float, n_1: int) -> float:
-            return math.pow(sigma_1, 2) / n_1
-
-        def B(sigma_2: float, n_2: int) -> float:
-            return math.pow(sigma_2, 2) / n_2
-
-        def df(A: int, B: int, n_1: int, n_2: int) -> float:
-            return math.pow(A + B, 2) / ((math.pow(A, 2) / (n_1 - 1)) + (math.pow(A, 2) / (n_2 - 1)))
-
         # Calculate the t statistic
         t = ((x_bar_1 - x_bar_2) - (mu_1 - mu_2)) / math.sqrt((math.pow(sigma_1, 2) / n_1) +
                                                               (math.pow(sigma_2, 2) / n_2))
+
         # Degrees of freedom
-        df = df(A(sigma_1, n_1), B(sigma_2, n_2), n_1, n_2)
+        df = TTest.df(TTest.A(sigma_1, n_1), TTest.B(sigma_2, n_2), n_1, n_2)
         p_value = TTest.get_p_value_table_value(t, df, test)
 
         return round(t, 2), round(p_value, 3)
+
+    @staticmethod
+    def A(sigma_1: float, n_1: int) -> float:
+        return math.pow(sigma_1, 2) / n_1
+
+    @staticmethod
+    def B(sigma_2: float, n_2: int) -> float:
+        return math.pow(sigma_2, 2) / n_2
+
+    @staticmethod
+    def df(A: int, B: int, n_1: int, n_2: int) -> float:
+        return math.pow(A + B, 2) / ((math.pow(A, 2) / (n_1 - 1)) + (math.pow(A, 2) / (n_2 - 1)))
 
     @staticmethod
     def get_p_value_table_value(t: float, df: float, test: Test) -> float:
@@ -214,6 +217,36 @@ class TTest:
                 p_value = 2 * t_test.sf(t, df)
 
         return p_value
+
+    @staticmethod
+    def calculate_two_means_confidence_interval(x_bar_1: float,
+                                                x_bar_2: float,
+                                                sigma_1: float,
+                                                sigma_2: float,
+                                                n_1: int,
+                                                n_2: int,
+                                                alpha: float,
+                                                test: Test) -> Tuple[float, float]:
+
+        df = TTest.df(TTest.A(sigma_1, n_1), TTest.B(sigma_2, n_2), n_1, n_2)
+        t_score_table = TTest.get_t_score_table_value(alpha, df, test)
+
+        E = t_score_table * math.sqrt(TTest.A(sigma_1, n_1) + TTest.B(sigma_2, n_2))
+
+        x_bar_dif = (x_bar_1 - x_bar_2)
+        min = round(x_bar_dif - E, 3)
+        max = round(x_bar_dif + E, 3)
+
+        return min, max
+
+    @staticmethod
+    def get_t_score_table_value(alpha: float, df: int, test: Test) -> float:
+        if test == Test.TWO_TAILED:
+            probability = 1 - (alpha / 2)
+        else:
+            probability = 1 - alpha
+
+        return t_test.ppf(probability, df)
 
 
 class ChiSquaredTest:

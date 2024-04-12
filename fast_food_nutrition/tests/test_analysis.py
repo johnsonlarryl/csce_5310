@@ -191,6 +191,30 @@ def test_calculate_two_means():
     assert actual_p_value == expect_p_value
 
 
+def test_calculate_two_means_confidence_interval():
+    x_bar_1 = 3.866667
+    x_bar_2 = 3.993333
+    sigma_1 = 0.563001
+    sigma_2 = 0.39
+    n_1 = 12
+    n_2 = 15
+    alpha = 0.05
+    test = Test.TWO_TAILED
+
+    expect_confidence_interval = (-0.544, 0.291)
+    actual_confidence_interval = TTest.calculate_two_means_confidence_interval(x_bar_1=x_bar_1,
+                                                                               x_bar_2=x_bar_2,
+                                                                               sigma_1=sigma_1,
+                                                                               sigma_2=sigma_2,
+                                                                               n_1=n_1,
+                                                                               n_2=n_2,
+                                                                               alpha=alpha,
+                                                                               test=test)
+
+    assert actual_confidence_interval == expect_confidence_interval
+
+
+
 
 
 
