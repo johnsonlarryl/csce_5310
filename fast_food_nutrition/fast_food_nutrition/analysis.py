@@ -2,7 +2,7 @@ import math
 
 import pandas as pd
 from pandas import DataFrame, Series
-from scipy.stats import chi2, norm, t
+from scipy.stats import chi2, norm, t as t_test
 from typing import List, Tuple
 
 from fast_food_nutrition.model import HypothesisTestConclusion, HypothesisTestMethod, Test
@@ -50,18 +50,12 @@ class ZTest:
         # Calculate the z-score
         p_hat = x / n
         z = (p_hat - p0) / math.sqrt((p0 * (1 - p0)) / n)
-
-        if test == Test.TWO_TAILED:  # Calculate the p-value for a two-tailed test
-            p_value = 2 * (1 - norm.cdf(abs(z)))
-        elif test == Test.LEFT_TAILED: # Calculate the p-value for a left-tailed test
-            p_value = norm.cdf(z)
-        elif test == Test.RIGHT_TAILED: # Calculate the p-value for a right-tailed test
-            p_value = 1 - norm.cdf(z)
+        p_value = ZTest.get_p_value_table_value(z, test)
 
         return round(z, 2), round(p_value, 3)
 
     @staticmethod
-    def calculate_proportion_hypothesis_critical_value_test_method(z: float, alpha: float, test: Test) -> HypothesisTestConclusion:
+    def calculate_hypothesis_critical_value_test_method(z: float, alpha: float, test: Test) -> HypothesisTestConclusion:
         if test == Test.TWO_TAILED:
             z_alpha_2 = 1 - (alpha / 2)
             critical_value_upper = norm.ppf(z_alpha_2)
@@ -87,26 +81,139 @@ class ZTest:
                 return HypothesisTestConclusion.FAIL_TO_REJECT_H0
 
     @staticmethod
-    def calculate_proportion_hypothesis_p_value_test_method(p_value: float, alpha: float) -> HypothesisTestConclusion:
+    def calculate_p_value_test_method(p_value: float, alpha: float) -> HypothesisTestConclusion:
         if p_value <= alpha:
             return HypothesisTestConclusion.REJECT_H_0
         else:
             return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+
+    @staticmethod
+    def calculate_proporation_confidence_interval(x: int, n: int, alpha: float, test: Test) -> Tuple[float, float]:
+        p_hat = x / n
+        q_hat = 1 - p_hat
+
+        z_score_table = ZTest.get_z_score_table_value(alpha, test)
+
+        E = z_score_table * math.sqrt((p_hat * q_hat) / n)
+
+        min = round(p_hat - E, 3)
+        max = round(p_hat + E, 3)
+
+        return min, max
+
+    @staticmethod
+    def calculate_confidence_interval_test_method(p0: float, min: float, max: float) -> Test:
+        if p0 >= min and p0 <= max:
+            return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+        else:
+            return HypothesisTestConclusion.REJECT_H_0
+
+    @staticmethod
+    def calculate_mean(x_bar: float,
+                       mu: float,
+                       sigma: float,
+                       n: int,
+                       test: Test) -> Tuple[float, float]:
+        # Calculate the z-score
+        z = (x_bar - mu) / (sigma / math.sqrt(n))
+
+        p_value = ZTest.get_p_value_table_value(z, test)
+
+        return round(z, 2), round(p_value, 3)
+
+    @staticmethod
+    def calculate_mean_confidence_interval(x_bar: float,
+                                           sigma: float,
+                                           n: int,
+                                           alpha: float,
+                                           test: Test) -> Tuple[float, float]:
+
+        z_score_table = ZTest.get_z_score_table_value(alpha, test)
+
+        E = z_score_table * (sigma / math.sqrt(n))
+
+        min = round(x_bar - E, 3)
+        max = round(x_bar + E, 3)
+
+        return min, max
+
+    @staticmethod
+    def get_z_score_table_value(alpha: float, test: Test) -> float:
+        if test == Test.TWO_TAILED:
+            probalility = 1 - (alpha / 2)
+        else:
+            probalility = 1 - alpha
+
+        return norm.ppf(probalility)
+
+    @staticmethod
+    def get_p_value_table_value(z: float, test: Test) -> float:
+        if test == Test.TWO_TAILED:  # Calculate the p-value for a two-tailed test
+            p_value = 2 * (1 - norm.cdf(abs(z)))
+        elif test == Test.LEFT_TAILED:  # Calculate the p-value for a left-tailed test
+            p_value = norm.cdf(z)
+        elif test == Test.RIGHT_TAILED:  # Calculate the p-value for a right-tailed test
+            p_value = 1 - norm.cdf(z)
+
+        return p_value
 
 
 class TTest:
     @staticmethod
     def calculate(x_bar: float, mu_0: float, n: int, s: float):
         # Calculate the t statistic
-        t_statistic = (x_bar - mu_0) / (s / (n ** 0.5))
+        t = (x_bar - mu_0) / (s / (n ** 0.5))
 
         # Degrees of freedom
         df = n - 1
 
         # Calculate the p-value for a right-tailed test
-        p_value = t.sf(t_statistic, df)
+        p_value = t_test.sf(t, df)
 
-        return t_statistic, p_value
+        return t, p_value
+
+    @staticmethod
+    def calculate_two_means(x_bar_1: float,
+                            x_bar_2: float,
+                            mu_1: float,
+                            mu_2: float,
+                            sigma_1: float,
+                            sigma_2: float,
+                            n_1: int,
+                            n_2: int,
+                            test: Test) -> Tuple[float, float]:
+
+        def A(sigma_1: float, n_1: int) -> float:
+            return math.pow(sigma_1, 2) / n_1
+
+        def B(sigma_2: float, n_2: int) -> float:
+            return math.pow(sigma_2, 2) / n_2
+
+        def df(A: int, B: int, n_1: int, n_2: int) -> float:
+            return math.pow(A + B, 2) / ((math.pow(A, 2) / (n_1 - 1)) + (math.pow(A, 2) / (n_2 - 1)))
+
+        # Calculate the t statistic
+        t = ((x_bar_1 - x_bar_2) - (mu_1 - mu_2)) / math.sqrt((math.pow(sigma_1, 2) / n_1) +
+                                                              (math.pow(sigma_2, 2) / n_2))
+        # Degrees of freedom
+        df = df(A(sigma_1, n_1), B(sigma_2, n_2), n_1, n_2)
+        p_value = TTest.get_p_value_table_value(t, df, test)
+
+        return round(t, 2), round(p_value, 3)
+
+    @staticmethod
+    def get_p_value_table_value(t: float, df: float, test: Test) -> float:
+        if test == Test.RIGHT_TAILED:
+            p_value = t_test.sf(t, df)
+        elif test == Test.LEFT_TAILED:
+            p_value = t_test.cdf(t, df)
+        elif test == Test.TWO_TAILED:
+            if t < 0:
+                p_value = 2 * t_test.cdf(t, df)
+            else:
+                p_value = 2 * t_test.sf(t, df)
+
+        return p_value
 
 
 class ChiSquaredTest:
