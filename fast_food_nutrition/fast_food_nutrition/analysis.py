@@ -1,9 +1,10 @@
 import math
 
+import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from scipy.stats import chi2, norm, t as t_test
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from fast_food_nutrition.model import HypothesisTestConclusion, HypothesisTestMethod, Test
 
@@ -193,6 +194,21 @@ class TTest:
         return round(t, 2), round(p_value, 3)
 
     @staticmethod
+    def calculate_r(x: np.ndarray[Union[float, int]],
+                    y: np.ndarray[Union[float, int]],
+                    test: Test) -> Tuple[float, float]:
+        r = CoLinearity.calculate_r(x, y)
+        n = len(x)
+        t = r / math.sqrt((1 - math.pow(r, 2)) / (n - 2))
+
+        # Degrees of freedom
+        df = n - 2
+
+        p_value = TTest.get_p_value_table_value(t, df, test)
+
+        return r, round(p_value, 3)
+
+    @staticmethod
     def A(sigma_1: float, n_1: int) -> float:
         return math.pow(sigma_1, 2) / n_1
 
@@ -262,3 +278,43 @@ class ChiSquaredTest:
         p_value = chi2.sf(chi_squared_statistic, df)
 
         return chi_squared_statistic, p_value
+
+
+class CoLinearity:
+    @staticmethod
+    def calculate_r(x: np.ndarray[Union[float, int]], y: np.ndarray[Union[float, int]]) -> float:
+        def sum_x(x: np.ndarray[Union[float, int]]) -> float:
+            return np.sum(x)
+
+        def sum_x_squared(x: np.ndarray[Union[float, int]]) -> float:
+            return (x ** 2).sum()
+
+        def sum_y(y: np.ndarray[Union[float, int]]) -> float:
+            return np.sum(y)
+
+        def sum_y_squared(y: np.ndarray[Union[float, int]]) -> float:
+            return (y ** 2).sum()
+
+        def sum_x_y(x: np.ndarray[Union[float, int]], y: np.ndarray[Union[float, int]]) -> float:
+            xy = 0
+
+            for x_1, y_1 in zip(x, y):
+                xy += x_1 * y_1
+
+            return xy
+
+        n_1 = len(x)
+        n_2 = len(y)
+
+        if n_1 != n_2:
+            raise ValueError("The number of samples for each list must be equal")
+        else:
+            n = n_1
+
+        r = (n * sum_x_y(x, y) - sum_x(x) * sum_y(y)) / \
+            ((math.sqrt(n * sum_x_squared(x) - math.pow(sum_x(x), 2))) *
+             (math.sqrt(n * sum_y_squared(y) - math.pow(sum_y(y), 2))))
+
+        return round(r, 3)
+
+

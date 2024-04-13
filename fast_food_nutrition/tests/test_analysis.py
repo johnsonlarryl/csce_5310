@@ -1,4 +1,7 @@
-from fast_food_nutrition.analysis import ZTest, TTest
+import numpy as np
+
+
+from fast_food_nutrition.analysis import CoLinearity, TTest, ZTest
 from fast_food_nutrition.model import HypothesisTestConclusion, Test
 
 
@@ -214,6 +217,20 @@ def test_calculate_two_means_confidence_interval():
     assert actual_confidence_interval == expect_confidence_interval
 
 
+def test_calculate_r_two_tailed():
+    x = np.array([4.5, 10.2, 4.4, 2.9, 3.9, 0.7, 8.5, 7.3, 6.3, 11.6, 2.5,
+                  8.8, 3.7, 1.8, 4.5, 9.4, 3.6, 2.0, 3.6, 6.4, 11.9, 9.7, 5.3])
+    y = np.array([5.5, 24.3, 8.6, 0.1, 6.1, 0.1, 25.3, 7.6, 9.0, 12.7, 1.9,
+                  12.7, 3.3, 1.5, 11.4, 25.5, 3.1, 1.9, 1.7, 31.9, 31.5, 18.9, 10.8])
+    test = Test.TWO_TAILED
+
+    expect_r = 0.801
+    expect_p_value = 0.000
+
+    actual_r, actual_p_value = TTest.calculate_r(x, y, test)
+
+    assert actual_r == expect_r
+    assert actual_p_value == expect_p_value
 
 
 
