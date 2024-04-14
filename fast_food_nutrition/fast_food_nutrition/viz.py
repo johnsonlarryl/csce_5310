@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 from pandas import DataFrame
+from scipy.stats import linregress
+from sklearn.linear_model import LinearRegression
 from typing import Dict
 
-from fast_food_nutrition.model import COLOR, COLORS, FoodNutritionFeatures, FoodNutritionMapping
+from fast_food_nutrition.model import COLOR, FoodNutritionFeatures, FoodNutritionMapping
 
 
 class FastFoodNutritionVisualizer:
@@ -86,6 +88,59 @@ class FastFoodNutritionVisualizer:
             return menu.drop(FoodNutritionFeatures.MENU_ITEM, axis=1)
         else:
             return menu
+
+    @staticmethod
+    def generate_single_linear_regression(menu: DataFrame, independent_vars: Dict[str, str], target_var: str) -> None:
+        # Setup the matplotlib figure and axes
+        fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(15, 10))
+        axes = axes.flatten()  # Flatten to easily index them
+
+        # Remove the last subplot (since we have 5 variables and 6 subplots)
+        fig.delaxes(axes[-1])
+
+        # Loop through each independent variable and create plots
+        for i, var in enumerate(independent_vars.keys()):
+            # Perform linear regression
+            slope, intercept, r_value, p_value, std_err = linregress(menu[var], menu[target_var])
+
+            # Generate values for the regression line
+            line = slope * menu[var] + intercept
+
+            # Scatter plot and regression line
+            axes[i].scatter(menu[var], menu[target_var], label=f'{var} vs {target_var}', color=FoodNutritionMapping[independent_vars[var]][COLOR], alpha=0.5)
+            axes[i].plot(menu[var], line, color='red', label=f'Fit: {slope:.2f}*x + {intercept:.2f}')
+
+            # Labeling
+            axes[i].set_title(f'Regression of {var}')
+            axes[i].set_xlabel(f'{var}')
+            axes[i].set_ylabel(f'{target_var}')
+            axes[i].legend()
+
+        # Adjust layout
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def generate_multi_linear_regresssion(menu: DataFrame, independent_vars: Dict[str, str], target_var: str) -> None:
+        # Prepare the data
+        X = menu[independent_vars.keys()]
+        y = menu[target_var]
+
+        # Create and fit the model
+        model = LinearRegression()
+        model.fit(X, y)
+
+        # Make predictions
+        y_pred = model.predict(X)
+
+        # Plot actual vs predicted values
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y, y_pred, alpha=0.5)
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], '--r', linewidth=2)
+        plt.xlabel('Actual')
+        plt.ylabel('Predicted')
+        plt.title('Actual vs. Predicted Composite Intake Score')
+        plt.show()
 
 
 

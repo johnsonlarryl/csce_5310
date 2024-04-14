@@ -233,9 +233,14 @@ def test_calculate_r_two_tailed():
     assert actual_p_value == expect_p_value
 
 
+def test_convert_r_to_t():
+    r = 0.801
+    expect_t = 6.131
+    n = 23
 
+    actual_t = TTest.convert_from_r_to_t(r, n)
 
-
+    assert actual_t == expect_t
 
 
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from scipy.stats import chi2, norm, t as t_test
+import scipy.stats as stats
 from typing import List, Tuple, Union
 
 from fast_food_nutrition.model import HypothesisTestConclusion, HypothesisTestMethod, Test
@@ -264,6 +265,40 @@ class TTest:
 
         return t_test.ppf(probability, df)
 
+    @staticmethod
+    def calculate_hypothesis_critical_value_test_method(t: float, alpha: float, df: int, test: Test) -> HypothesisTestConclusion:
+        if test == Test.TWO_TAILED:
+            t_alpha_2 = 1 - (alpha / 2)
+            critial_value_upper = t_test.ppf(t_alpha_2, df)
+            crital_value_lower = t_test.ppf(1 - t_alpha_2, df)
+
+            if t <= crital_value_lower or t >= critial_value_upper:
+                return HypothesisTestConclusion.REJECT_H_0
+            else:
+                return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+
+        elif test == Test.LEFT_TAILED:
+            critical_value = t_test.ppf(alpha, df)
+
+            if t <= critical_value:
+                return HypothesisTestConclusion.REJECT_H_0
+            else:
+                return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+        elif test == Test.RIGHT_TAILED:
+            critical_value = t_test.ppf(1 - alpha, df)
+
+            if t >= critical_value:
+                return HypothesisTestConclusion.REJECT_H_0
+            else:
+                return HypothesisTestConclusion.FAIL_TO_REJECT_H0
+
+    @staticmethod
+    def convert_from_r_to_t(r: float, n: int) -> float:
+        df = n - 2
+        t = r / math.sqrt((1 - math.pow(r, 2)) / df)
+
+        return round(t, 3)
+
 
 class ChiSquaredTest:
     @staticmethod
@@ -316,5 +351,31 @@ class CoLinearity:
              (math.sqrt(n * sum_y_squared(y) - math.pow(sum_y(y), 2))))
 
         return round(r, 3)
+
+    @staticmethod
+    def pearson_r_confidence_interval(x: int, y: int, alpha=float) -> Tuple[float, float]:
+        # Calculate Pearson correlation coefficient
+        r, _ = stats.pearsonr(x, y)
+
+        # Convert r to Fisher's z
+        r_z = np.arctanh(r)
+        # Standard error
+        se = 1.0 / np.sqrt(len(x) - 3)
+
+        # Critical value for the confidence level
+        z_critical = stats.norm.ppf(1 - alpha / 2)
+
+        # Margin of error
+        moe = z_critical * se
+
+        # Confidence interval
+        z_ci_lower = r_z - moe
+        z_ci_upper = r_z + moe
+
+        # Convert back to r scale
+        r_ci_lower = np.tanh(z_ci_lower)
+        r_ci_upper = np.tanh(z_ci_upper)
+
+        return round(r_ci_lower, 3), round(r_ci_upper, 3)
 
 
